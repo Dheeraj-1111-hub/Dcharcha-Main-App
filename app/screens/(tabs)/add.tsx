@@ -1,14 +1,3 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import CameraScreen from "../capture/Camera";
 
-const add = () => {
-  return (
-    <View>
-      <Text>add</Text>
-    </View>
-  )
-}
-
-export default add
-
-const styles = StyleSheet.create({})
+export default CameraScreen;

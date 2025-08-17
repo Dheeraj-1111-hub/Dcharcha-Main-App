@@ -1,19 +1,9 @@
-// app/_layout.tsx
-import React from "react";
-import { Text, Platform, StyleSheet, View } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Text, View, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Import your screens
-import Home from "./feed1";
-import Search from "./add";
-import Profile from "./profile";
-import CameraScreen from "./../capture/Camera";
-
-const Tab = createBottomTabNavigator();
-
-export default function Layout() {
+export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const theme = {
     background: "#FFFFFF",
@@ -23,7 +13,7 @@ export default function Layout() {
   };
 
   return (
-    <Tab.Navigator
+    <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
@@ -48,47 +38,47 @@ export default function Layout() {
         tabBarInactiveTintColor: theme.text,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={Home}
+      <Tabs.Screen
+        name="feed1"
         options={{
+          title: "Home",
           tabBarIcon: ({ focused }) => (
             <MaterialIcons
               name="home"
-              size={focused ? 30 : 28} // Bigger size
+              size={focused ? 30 : 28}
               color={focused ? theme.primary : theme.text}
             />
           ),
         }}
       />
 
-      <Tab.Screen
-        name="Community"
-        component={CameraScreen} // 👈 open camera screen directly
+      <Tabs.Screen
+        name="add"
         options={{
+          title: "Community",
           tabBarIcon: () => (
             <View style={styles.addButton}>
               <MaterialIcons name="add" size={36} color="white" />
             </View>
           ),
-          tabBarLabel: () => null,
+          tabBarLabel: () => null, // hide text
         }}
       />
 
-      <Tab.Screen
-        name="Profile"
-        component={Profile}
+      <Tabs.Screen
+        name="profile"
         options={{
+          title: "Profile",
           tabBarIcon: ({ focused }) => (
             <MaterialIcons
               name="person"
-              size={focused ? 30 : 28} // Bigger size
+              size={focused ? 30 : 28}
               color={focused ? theme.primary : theme.text}
             />
           ),
         }}
       />
-    </Tab.Navigator>
+    </Tabs>
   );
 }
 
@@ -108,7 +98,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
-    elevation: 4, // Android shadow
-    marginBottom: 0, // Lift above tab bar
+    elevation: 4,
   },
 });
