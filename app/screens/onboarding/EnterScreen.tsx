@@ -50,7 +50,7 @@ export default function EnterScreen() {
       {/* Button */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push("/screens/onboarding/EngageScreen")}
+        onPress={() => router.push("/screens/signup/Signup1")}
       >
         <Text style={styles.buttonText}>START</Text>
       </TouchableOpacity>
