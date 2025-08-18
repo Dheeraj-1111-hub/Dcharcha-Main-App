@@ -10,6 +10,7 @@ import {
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as FileSystem from "expo-file-system"; // 👈 important
 
 const { width } = Dimensions.get("window");
 
@@ -32,7 +33,10 @@ export default function CameraScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.permissionText}>Camera access needed</Text>
-        <TouchableOpacity style={styles.permissionBtn} onPress={requestPermission}>
+        <TouchableOpacity
+          style={styles.permissionBtn}
+          onPress={requestPermission}
+        >
           <Text style={styles.permissionBtnText}>Grant Permission</Text>
         </TouchableOpacity>
       </View>
@@ -43,16 +47,36 @@ export default function CameraScreen() {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync();
+        console.log("📸 Photo captured:", photo); 
         setCapturedPhoto(photo.uri);
       } catch (error) {
-        console.error("Error taking photo:", error);
+        console.error("❌ Error taking photo:", error);
       }
     }
   };
 
-  const confirmPhoto = () => {
-    console.log("✅ Using photo:", capturedPhoto);
-    setCapturedPhoto(null);
+  const confirmPhoto = async () => {
+    if (capturedPhoto) {
+      try {
+        // Move photo into a safe, persistent directory
+        const newPath =
+          FileSystem.documentDirectory + `photo_${Date.now()}.jpg`;
+        await FileSystem.moveAsync({
+          from: capturedPhoto,
+          to: newPath,
+        });
+
+        console.log("➡️ Navigating with safe URI:", newPath);
+
+        router.push({
+          pathname: "/screens/capture/Capture2",
+          params: { photoUri: newPath },
+        });
+        setCapturedPhoto(null);
+      } catch (err) {
+        console.error("❌ Error saving photo:", err);
+      }
+    }
   };
 
   const retakePhoto = () => {
@@ -82,7 +106,6 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Camera Preview */}
       <CameraView
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -130,6 +153,9 @@ export default function CameraScreen() {
   );
 }
 
+// ... keep your styles as is
+
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "black" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -163,7 +189,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingHorizontal: 15,
     paddingVertical: 6,
-    backdropFilter: "blur(8px)",
   },
   zoomButton: {
     marginHorizontal: 6,
@@ -207,54 +232,49 @@ const styles = StyleSheet.create({
   },
 
   // --- Preview Styles ---
-  // --- Preview Styles ---
-previewContainer: {
-  flex: 1,
-  backgroundColor: "black",
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 10,
-},
-
-previewImage: {
-  width: width - 30,
-  height: "75%",
-  resizeMode: "cover",
-  borderRadius: 25,
-  marginBottom: 25,
-  shadowColor: "#00E0B8",
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.6,
-  shadowRadius: 12,
-  elevation: 12,
-},
-
-previewActions: {
-  position: "absolute",
-  bottom: 40,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  width: "85%",
-  backgroundColor: "rgba(0,0,0,0.35)",
-  padding: 14,
-  borderRadius: 20,
-  backdropFilter: "blur(10px)", // for web only
-},
-
-retakeButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "rgba(255,0,0,0.85)",
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-},
-useButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "rgba(0,200,100,0.9)",
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-},
+  previewContainer: {
+    flex: 1,
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  previewImage: {
+    width: width - 30,
+    height: "75%",
+    resizeMode: "cover",
+    borderRadius: 25,
+    marginBottom: 25,
+  },
+  previewActions: {
+    position: "absolute",
+    bottom: 40,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "85%",
+    backgroundColor: "rgba(0,0,0,0.35)",
+    padding: 14,
+    borderRadius: 20,
+  },
+  retakeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,0,0,0.85)",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  useButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,200,100,0.9)",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  actionText: {
+    color: "white",
+    fontWeight: "600",
+    marginLeft: 6,
+  },
 });
