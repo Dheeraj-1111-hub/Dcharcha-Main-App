@@ -8,18 +8,28 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function ReimagineScreen() {
   const [eraseText, setEraseText] = useState("");
   const [addText, setAddText] = useState("");
   const { photoUri } = useLocalSearchParams<{ photoUri?: string }>();
+  const router = useRouter();
 
   // decode URI if it’s encoded
   const decodedUri = photoUri ? decodeURIComponent(photoUri) : null;
 
-  console.log("📥 Received in ReimagineScreen, photoUri:", photoUri);
-  console.log("✅ Decoded URI:", decodedUri);
+  const handleReimagine = () => {
+    // Navigate to Tomorrow.tsx
+    router.push({
+      pathname: "/screens/capture/Tomorrow",   // make sure Tomorrow.tsx is inside app/ directory
+      params: {
+        photoUri: decodedUri,
+        title: "Underbridge Rail Crossing",
+        description: "🚦 Saves 30 minutes. Impacts 10K homes. Transforms daily commute.",
+      },
+    });
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -56,7 +66,7 @@ export default function ReimagineScreen() {
       />
 
       {/* Button */}
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleReimagine}>
         <Text style={styles.buttonText}>REIMAGINE THIS SPACE</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -89,20 +99,20 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     fontSize: 14,
     fontWeight: "500",
-    color: "#00695C", // changed to green like screenshot
+    color: "#00695C",
     marginBottom: 8,
-    marginTop:8,
+    marginTop: 8,
   },
   input: {
     width: "100%",
-    minHeight: 60, // taller input like screenshot
+    minHeight: 60,
     borderWidth: 1,
-    borderColor: "#00695C", // green border
+    borderColor: "#00695C",
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 10,
     marginBottom: 20,
-    textAlignVertical: "top", // aligns text at top
+    textAlignVertical: "top",
   },
   button: {
     backgroundColor: "#00695C",

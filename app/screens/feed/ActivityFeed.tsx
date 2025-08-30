@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
-  FlatList,
+  TouchableOpacity,
   Image,
-  Modal,
-  Pressable,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
 
 const TABS = ["My Place", "My District", "My State", "My Nation"];
 
-// Initial static posts
-const initialPosts = [
+const posts = [
   {
     id: "1",
     name: "Naga Reddy Majji",
@@ -55,55 +50,8 @@ const initialPosts = [
   },
 ];
 
-export default function DCharchaScreen() {
+export default function DCharcha() {
   const [activeTab, setActiveTab] = useState("My Place");
-  const [feedPosts, setFeedPosts] = useState(initialPosts);
-
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const params = useLocalSearchParams();
-
-  // Add new post from TomorrowScreen
-  useEffect(() => {
-    if (params?.title && params?.description) {
-      const newPost = {
-        id: Date.now().toString(),
-        name: "You",
-        username: "@you",
-        time: "Just now",
-        title: params.title as string,
-        description: params.description as string,
-        images: params.image ? [params.image as string] : [],
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        location: "Your Location",
-        isFollowing: false,
-      };
-      setFeedPosts((prev) => [newPost, ...prev]);
-    }
-  }, [params]);
-
-  const toggleFollow = (postId: string) => {
-    setFeedPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, isFollowing: !p.isFollowing } : p
-      )
-    );
-  };
-
-  const toggleLike = (postId: string) => {
-    setFeedPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
-              ...p,
-              likes: p.likes + (p.isLiked ? -1 : 1),
-              isLiked: !p.isLiked,
-            }
-          : p
-      )
-    );
-  };
 
   const renderPost = ({ item }) => (
     <View style={styles.card}>
@@ -118,10 +66,7 @@ export default function DCharchaScreen() {
         </View>
 
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity
-            style={styles.followBtn}
-            onPress={() => toggleFollow(item.id)}
-          >
+          <TouchableOpacity style={styles.followBtn}>
             <Text style={styles.followText}>
               {item.isFollowing ? "Unfollow" : "Follow"}
             </Text>
@@ -140,30 +85,18 @@ export default function DCharchaScreen() {
       <Text style={styles.description}>{item.description}</Text>
 
       {/* Images */}
-      {item.images?.length > 0 && (
-        <View style={styles.imageRow}>
-          {item.images.map((img, idx) => (
-            <TouchableOpacity key={idx} onPress={() => setSelectedImage(img)}>
-              <Image source={{ uri: img }} style={styles.postImage} />
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+      <View style={styles.imageRow}>
+        {item.images.map((img, idx) => (
+          <Image key={idx} source={{ uri: img }} style={styles.postImage} />
+        ))}
+      </View>
 
       {/* Actions */}
       <View style={styles.actionsRow}>
-        <TouchableOpacity
-          style={styles.actionItem}
-          onPress={() => toggleLike(item.id)}
-        >
-          <Ionicons
-            name={item.isLiked ? "heart" : "heart-outline"}
-            size={20}
-            color={item.isLiked ? "red" : "#333"}
-          />
+        <View style={styles.actionItem}>
+          <Ionicons name="heart-outline" size={20} color="#333" />
           <Text style={styles.actionText}>{item.likes}</Text>
-        </TouchableOpacity>
-
+        </View>
         <View style={styles.actionItem}>
           <Ionicons name="chatbubble-outline" size={20} color="#333" />
           <Text style={styles.actionText}>{item.comments}</Text>
@@ -184,30 +117,22 @@ export default function DCharchaScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <Text style={styles.headerText}>D CHARCHA</Text>
+    <View style={styles.container}>
+      {/* Title */}
+      <Text style={styles.header}>D CHARCHA</Text>
 
       {/* Tabs */}
-      <View style={styles.buttonRow}>
+      <View style={styles.tabRow}>
         {TABS.map((tab) => {
           const isActive = activeTab === tab;
           return (
             <TouchableOpacity
               key={tab}
-              style={[
-                styles.button,
-                isActive ? styles.activeButton : styles.inactiveButton,
-              ]}
+              style={[styles.tabBtn, isActive ? styles.activeTab : styles.inactiveTab]}
               onPress={() => setActiveTab(tab)}
             >
               <Text
-                style={[
-                  styles.buttonText,
-                  isActive
-                    ? styles.activeButtonText
-                    : styles.inactiveButtonText,
-                ]}
+                style={[styles.tabText, isActive ? styles.activeTabText : styles.inactiveTabText]}
               >
                 {tab}
               </Text>
@@ -218,90 +143,64 @@ export default function DCharchaScreen() {
 
       {/* Feed */}
       <FlatList
-        data={feedPosts}
+        data={posts}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 80 }}
-        ListEmptyComponent={
-          <View style={styles.messageContainer}>
-            <Text style={styles.messageText}>
-              Share your{" "}
-              <Text style={{ fontWeight: "bold" }}>“Dream World”</Text> to your
-              {"\n"}Community by Clicking{" "}
-              <Text style={{ fontWeight: "bold" }}>“+” button</Text>
-            </Text>
-          </View>
-        }
       />
 
-      {/* Fullscreen Image Modal */}
-      <Modal visible={!!selectedImage} transparent animationType="fade">
-        <View style={styles.modalBg}>
-          <Pressable style={styles.modalClose} onPress={() => setSelectedImage(null)}>
-            <Ionicons name="close" size={30} color="white" />
-          </Pressable>
-          <Image source={{ uri: selectedImage! }} style={styles.fullImage} />
-        </View>
-      </Modal>
-    </SafeAreaView>
+      {/* Bottom Actions */}
+      
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f9fa" },
-  headerText: {
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#0D5C56",
     textAlign: "center",
     marginTop: 40,
-    letterSpacing: 1,
+    marginBottom: 20,
+    color: "#0D5C56",
   },
-  buttonRow: {
+  tabRow: {
     flexDirection: "row",
-    marginTop: 20,
-    gap: 10,
+    marginTop: 10,
+    marginBottom: 15,
     flexWrap: "wrap",
     justifyContent: "center",
+    gap: 10,
   },
-  button: {
+  tabBtn: {
     borderWidth: 1,
     borderRadius: 10,
     paddingVertical: 8,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
   },
-  activeButton: {
+  activeTab: {
     backgroundColor: "#0D5C56",
     borderColor: "#0D5C56",
   },
-  inactiveButton: {
+  inactiveTab: {
     backgroundColor: "white",
     borderColor: "#0D5C56",
   },
-  buttonText: { fontSize: 14, fontWeight: "600" },
-  activeButtonText: { color: "white" },
-  inactiveButtonText: { color: "#0D5C56" },
-  messageContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  messageText: {
-    fontSize: 14,
-    color: "#333",
-    textAlign: "center",
-    lineHeight: 20,
-  },
+  tabText: { fontSize: 14, fontWeight: "600" },
+  activeTabText: { color: "white" },
+  inactiveTabText: { color: "#0D5C56" },
+
   card: {
     backgroundColor: "#fff",
     margin: 10,
-    padding: 14,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 12,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerRow: {
     flexDirection: "row",
@@ -318,22 +217,26 @@ const styles = StyleSheet.create({
   username: { color: "#777", fontSize: 12 },
   followBtn: {
     backgroundColor: "#e0f2f1",
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   followText: { fontSize: 12, fontWeight: "600", color: "#0D5C56" },
-  title: { fontWeight: "700", fontSize: 15, marginTop: 6 },
-  description: { color: "#333", marginTop: 4, fontSize: 13 },
-  imageRow: { flexDirection: "row", marginTop: 8, flexWrap: "wrap", gap: 6 },
+
+  title: { fontWeight: "700", fontSize: 14, marginTop: 6 },
+  description: { color: "#333", marginTop: 2, fontSize: 13 },
+
+  imageRow: { flexDirection: "row", marginTop: 8 },
   postImage: {
-    width: 150,
+    width: "48%",
     height: 120,
-    borderRadius: 10,
+    borderRadius: 8,
+    marginRight: 6,
   },
+
   actionsRow: {
     flexDirection: "row",
-    marginTop: 10,
+    marginTop: 8,
     justifyContent: "flex-start",
   },
   actionItem: {
@@ -342,24 +245,29 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   actionText: { marginLeft: 4, fontSize: 12, color: "#333" },
+
   footerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
   },
   location: { marginLeft: 4, fontSize: 12, color: "#555" },
   time: { marginLeft: "auto", fontSize: 12, color: "#777" },
-  modalBg: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fullImage: { width: "90%", height: "70%", borderRadius: 12, resizeMode: "contain" },
-  modalClose: {
+
+  bottomBar: {
     position: "absolute",
-    top: 40,
-    right: 20,
-    zIndex: 10,
+    bottom: 10,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+  },
+  addBtn: {
+    backgroundColor: "#0D5C56",
+    padding: 12,
+    borderRadius: 30,
   },
 });
